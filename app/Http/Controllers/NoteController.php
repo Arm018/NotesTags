@@ -6,42 +6,46 @@ namespace App\Http\Controllers;
 use App\Http\Requests\NoteRequest;
 use App\Models\Note;
 use App\Models\Tag;
+use App\Services\NoteService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class NoteController extends Controller
 {
+    protected $noteService;
+
+    public function __construct(NoteService $noteService)
+    {
+        $this->noteService = $noteService;
+    }
+
     public function index()
     {
-        $notes = Note::where('user_id', Auth::id())->get();
+        $notes = $this->noteService->getUserNotes();
         return view('notes.index', compact('notes'));
     }
 
     public function create()
     {
-        $tags = Tag::all();
+        $tags = $this->noteService->getAllTags();
         return view('notes.create', compact('tags'));
     }
 
     public function store(NoteRequest $request)
     {
-        $note = new Note();
-        $note->user_id = Auth::id();
-        $note->fill($request->validated());
-        $note->save();
+        $this->noteService->createNoteWithTags(
+            $request->validated(),
+            $request->tags,
+            $request->new_tag
+        );
 
-        if ($request->has('tags')) {
-            $note->tags()->sync($request->tags);
-        }
-
-        return redirect()->route('notes.index');
+        return redirect()->route('notes.index')->with('success', 'Note created successfully.');
     }
 
     public function edit($id)
     {
-
         $note = Note::findOrFail($id);
-        $tags = Tag::all();
+        $tags = $this->noteService->getAllTags();
         return view('notes.edit', compact('note', 'tags'));
     }
 
@@ -49,11 +53,7 @@ class NoteController extends Controller
     {
         $note = Note::findOrFail($id);
 
-        $note->update($request->validated());
-
-        if ($request->has('tags')) {
-            $note->tags()->sync($request->tags);
-        }
+        $this->noteService->updateNoteWithTags($note, $request->validated(), $request->tags);
 
         return redirect()->route('notes.index')->with('success', 'Note updated successfully!');
     }
@@ -61,8 +61,9 @@ class NoteController extends Controller
     public function destroy($id)
     {
         $note = Note::findOrFail($id);
-        $note->delete($id);
+        $this->noteService->deleteNote($note);
         return redirect()->route('notes.index');
     }
+
 
 }

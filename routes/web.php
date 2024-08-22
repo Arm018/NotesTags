@@ -2,7 +2,8 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\NoteController;
-use App\Http\Controllers\TagController;
+use App\Http\Controllers\NoteSearchController;
+use App\Http\Controllers\NoteTagController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -27,7 +28,9 @@ Route::get('auth/vk/callback', [App\Http\Controllers\Auth\LoginController::class
 
 Route::middleware('auth')->group(function () {
     Route::resource('notes', NoteController::class);
-    Route::resource('tags', TagController::class);
+    Route::get('/tags/{tag}/notes', [NoteTagController::class, 'index'])->name('notes.byTag');
+    Route::get('search', [NoteSearchController::class, 'search'])->name('notes.search');
+
 
 });
 Auth::routes();
