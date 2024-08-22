@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\NoteController;
+use App\Http\Controllers\NoteOrderController;
 use App\Http\Controllers\NoteSearchController;
 use App\Http\Controllers\NoteTagController;
 use Illuminate\Support\Facades\Auth;
